@@ -10,8 +10,8 @@ episode.json:
  "shots": [{"bg": "village", "chars": [{"name": "Ramu", "x": 600, "y": 620, "flip": false}],
             "lines": [{"who": "Ramu", "wav": "vo/001.wav"}], "hold": 0, "camera": {"zoom": 112, "x": 700, "y": 540}}]}
 x,y = where the centre of the character canvas goes. A shot lasts its lines (+0.3 s head, +0.5 s tail) or `hold` s.
-Line options: "gesture": explain (default) | point (at the other character, or "to") | namaste | worry | angry | shrug |
-wave_r | rest. Characters with arm parts + rig.json gesture (talker.py); others only lip-sync and blink.
+Line options: "gesture": explain (default: hand toward the listener) | point (at the listener or "to") | namaste |
+worry | angry | shrug | fold | wave_r | rest. Characters with arm parts + rig.json gesture (talker.py); others only lip-sync and blink.
 Per shot: BG, characters (body/eyes/mouth layers), lip-sync for each speaker, blinks, breathing idle, camera push,
 dialogue as stream sound -> shots/sNN.mp4 + sNN.anicraft. Then concat -> music bed ducked -> -14 LUFS -> final.mp4.
 """
@@ -72,18 +72,20 @@ def build_shot(ep, base, k, shot, out):
                 cues += cues_for(w, fps, offset=s) + [{"frame": e, "shape": "X"}]
                 talking.append((s, e))
                 g = ln.get("gesture", "explain")
+                other = ln.get("to") or next((n for n in xs if n != name), None)
+                side = ("_l" if xs[other] < xs[name] else "_r") if other else ""
                 if g == "point":                      # point at the listener (or `to`)
-                    other = ln.get("to") or next((n for n in xs if n != name), None)
-                    g = "point_l" if other and xs[other] < xs[name] else "point_r"
+                    g = "point" + (side or "_r")
+                elif g == "explain" and side:         # raise the hand on the listener's side
+                    g = "explain" + side
                 events += [(max(1, s - 3), g), (min(N - 1, e + 4), "rest")]
             events = sorted(events)
             events = [ev for j, ev in enumerate(events)        # no arm drop between close lines
                       if not (ev[1] == "rest" and j + 1 < len(events) and events[j + 1][0] - ev[0] < 12)]
 
             def inside(tk=tk, cues=cues, talking=talking, events=events, i=i):
-                if cues:
-                    apply_cues(ac, tk["mouth_layer"], sorted(cues, key=lambda c: c["frame"]),
-                               MOUTH9 if tk["chart_n"] >= 9 else MOUTH3)
+                apply_cues(ac, tk["mouth_layer"], sorted(cues, key=lambda c: c["frame"]),   # silent = rest all shot
+                           MOUTH9 if tk["chart_n"] >= 9 else MOUTH3)
                 blink(ac, tk["eyes_layer"], N, fps, seed=7 + 13 * i + k)
                 gesture_track(ac, tk, events, N, talking)
             with_symbol(ac, tk, inside)

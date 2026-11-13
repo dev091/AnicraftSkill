@@ -79,6 +79,8 @@ def apply_cues(ac, layer, cues, chart=MOUTH9, reset=True):
                 ac.run("timeline.clear_keyframe", layer=layer, frame=s)
     end = ac.layer_len(layer)
     have = set(starts())
+    if not cues or cues[0]["frame"] > 0:         # rest until the first cue (a graphic would otherwise loop/flap)
+        cues = [{"frame": 0, "shape": "X"}] + list(cues)
     n = 0
     for c in cues:
         f = c["frame"]

@@ -15,7 +15,10 @@ import json, math, os
 
 GESTURES = {  # per arm: (anchor joint, dx, dy) in arm lengths, screen space (+x right, +y down); missing arm = hang
     "rest": {},
-    "explain": {"l": ("shoulder_l", 0.40, 0.62), "r": ("shoulder_r", -0.40, 0.62)},
+    "explain": {"l": ("shoulder_l", -0.32, 0.52), "r": ("shoulder_r", 0.32, 0.52)},    # both hands out, palms up
+    "explain_l": {"l": ("shoulder_l", -0.45, 0.40)},     # one hand raised toward screen left
+    "explain_r": {"r": ("shoulder_r", 0.45, 0.40)},
+    "fold": {"l": ("shoulder_l", 0.40, 0.62), "r": ("shoulder_r", -0.40, 0.62)},       # arms folded (listening)
     "point_l": {"l": ("shoulder_l", -0.95, -0.10)},
     "point_r": {"r": ("shoulder_r", 0.95, -0.10)},
     "namaste": {"l": ("chest", -0.04, 0.0), "r": ("chest", 0.04, 0.0)},
@@ -67,6 +70,8 @@ def _sym_from_bitmaps(ac, layer, name, paths, x, y):
             ac.key(inner, i, blank=True)
             ac.run("library.place", bitmap=_bitmap(ac, p), x=0, y=0)
         ac.run("symbol.exit")
+    ac.at(layer, 0, select=True)                 # graphic symbols LOOP by default: lock to frame 0 (rest / eyes open)
+    ac.run("element.set_loop", loop="single_frame", first_frame=0)
     return inst
 
 
@@ -141,7 +146,7 @@ def _set_elbow_side(ac, t):
     for s in "lr":
         for lo, hi in ((0, 150), (-150, 0)):
             ac.run("bone.set_limits", bone=t["bones"][f"elbow_{s}"], constrain=True, min=lo, max=hi)
-            _solve(ac, t, s, "explain", 0)
+            _solve(ac, t, s, "fold", 0)
             ok = _elbow_out(ac, t, s)
             _hang(ac, t, s, 0)
             if ok:
