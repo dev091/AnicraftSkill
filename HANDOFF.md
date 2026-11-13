@@ -10,3 +10,11 @@
   arm swing direction sign by eye only.
 - Next: (1) prep_parts.py: ChatGPT #00FF00 sheet -> cut parts -> align to rig.json -> caps; (2) walker head with
   eyes/mouth; (3) first real episode with ChatGPT art + TTS; (4) turn/3-4 view walk.
+
+## SWOT gaps (P0 = do first)
+P0 script->shotlist generator; talker gesture rig (arms + 5 gestures); Hindi TTS lane + Rhubarb phonetic;
+   automate the 3 hand-checked gates (static > 3 s, shot median, lip-sync coverage); prep_parts.py.
+P1 head turns (front/3-4/side) + brows/expressions; props in hand + sit/stand; location bible with parallax layers;
+   ambience/SFX library; intro sting + end screen; walk start/stop/turn.
+P2 full-length ref benchmark (every shot, motion density, wpm, music %, thumbnails); Shorts cut-downs; Linux test.
+Risk: YouTube inauthentic/repetitive-content policy -> original stories, recurring cast, human review per episode.

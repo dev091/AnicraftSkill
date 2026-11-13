@@ -36,9 +36,10 @@ Rules and pitfalls: read `../SKILL.md` section 2 (golden rules) and `../referenc
    -> every gate PASS. Report numbers, not adjectives.
 
 ## 4. Gates (fail = fix before delivery)
-joint caps PASS; IK error <= 1.5 px; foot slide <= 2 px; knee bends forward; every layer reaches the last frame;
-1920x1080 @ 24 fps; audio present; -14 +/-1 LUFS; true peak <= -1 dBTP; no static stretch > 3 s; lip-sync keys on every
-voiced line; shot median 4-8 s over the episode.
+Automated (scripts print PASS/FAIL): joint caps; IK error <= 1.5 px; foot slide <= 2 px; knee bends forward; every
+layer reaches the last frame; 1920x1080 @ 24 fps; audio present; -14 +/-1 LUFS; true peak <= -1 dBTP.
+NOT automated yet (check by hand and say so in the report): no static stretch > 3 s; lip-sync keys on every voiced
+line; shot median 4-8 s over the episode.
 
 ## 5. Report to Claude (STATUS.md, <= 30 lines)
 Version of AniCraft, selftest result, gate table per shot, the one contact sheet path, open problems. No video files
