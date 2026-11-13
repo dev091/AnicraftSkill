@@ -33,6 +33,19 @@ def to_wav(src, dst):
     return dst
 
 
+def mirrored(d, pngs):
+    """Left-right mirrored copies of part PNGs in <char>/_mirror/ (rebuilt when the source is newer)."""
+    from PIL import Image, ImageOps
+    md = os.path.join(d, "_mirror"); os.makedirs(md, exist_ok=True)
+    out = []
+    for p in pngs:
+        src, dst = os.path.join(d, p), os.path.join(md, p)
+        if not os.path.exists(dst) or os.path.getmtime(dst) < os.path.getmtime(src):
+            ImageOps.mirror(Image.open(src)).save(dst)
+        out.append(dst)
+    return out
+
+
 def lib_bitmap(ac, path):
     r = ac.run("file.import_to_library", path=path)
     return r.get("bitmap") or r.get("id")
@@ -76,9 +89,10 @@ def build_shot(ep, base, k, shot, out):
             for part, pngs in (("body", ["body.png"]), ("eyes", [f"eyes_{i}.png" for i in range(3)]), ("mouth", mouth_pngs)):
                 lay[part] = ac.run("layer.new", name=f"{c['name']}_{part}")["layer"]
                 ac.fit(lay[part], N)
-                part_symbol(ac, lay[part], f"{c['name']}_{part}", [os.path.join(d, p) for p in pngs], c["x"], c["y"])
-                if c.get("flip"):
-                    ac.at(lay[part], 0, select=True); ac.run("modify.flip_h")
+                # flip = mirrored art, never modify.flip_h: a motion tween (breathing) re-decomposes a flipped
+                # instance as rotation 180 and turns it upside down (seen in testing)
+                files = mirrored(d, pngs) if c.get("flip") else [os.path.join(d, p) for p in pngs]
+                part_symbol(ac, lay[part], f"{c['name']}_{part}", files, c["x"], c["y"])
             mouths[c["name"]] = (lay["mouth"], MOUTH9 if len(mouth_pngs) >= 9 else MOUTH3)
             eye_layers.append(lay["eyes"]); char_layers += list(lay.values())
         for who in {ln["who"] for ln in lines}:

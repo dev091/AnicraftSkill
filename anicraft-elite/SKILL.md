@@ -34,7 +34,8 @@ Never upload or publish anything. Follow low-token-ops: read only what the step 
 8. **Easing values:** `Linear, QuadIn|EaseIn, QuadOut|EaseOut, QuadInOut|EaseInOut, CubicIn, CubicOut, CubicInOut, Smooth`, or `{"classic": -100..100}`, or `{"bezier": [x1,y1,x2,y2]}`. Motion tweens: per-property `motion.set_key` / `motion.set_ease`.
 9. **Overwrites:** exports and `save_as` refuse to replace files until `"confirm": true`; CLI `render` has no overwrite flag (delete first). Confirm only on files this job created; ask Rahul before replacing his files.
 10. **Sound:** `file.import {path: wav|mp3|ogg}` puts it on a new layer at the playhead; then `sound.set {layer, frame, sync:"stream"}` for dialogue (frame-locked), `event` for SFX; envelope/fade via `sound.set`. `file.export_video` muxes audio (AAC in MP4) by default.
-11. Every edit is undoable (`edit.undo`). Look up a command's exact params with `anicraft_commands {filter}` or grep `references/commands-v0.2.1.md` (299 commands) instead of guessing.
+11. **Never `modify.flip_h` an instance that gets a motion tween** (breathing, property keys): the tween re-decomposes the flip as rotation 180 and the character turns upside down. Mirror the art instead (`build_episode.py` does this for `"flip": true`).
+12. Every edit is undoable (`edit.undo`). Look up a command's exact params with `anicraft_commands {filter}` or grep `references/commands-v0.2.1.md` (299 commands) instead of guessing.
 
 ## 3. Shot pipeline (toon factory)
 1. **Plan**: beat sheet -> shot list (length in frames at 24 fps, camera, who speaks). One `.anicraft` per shot in `D:\youtube\anicraft\<job>\shots\`.
