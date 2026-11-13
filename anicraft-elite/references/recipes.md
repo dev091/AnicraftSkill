@@ -57,7 +57,7 @@ stride on the art (heel to heel of one step) before choosing it.
 snd = ac.run("file.import", path=r"D:\...\line01.wav")             # new layer at the playhead
 ac.run("sound.set", layer=snd["layer"], frame=0, sync="stream")     # dialogue; "event" for SFX
 ac.run("sound.set", layer=music, frame=0, effect="fade_out")        # or envelope=[{at, left, right}, ...]
-ac.run("layer.set_volume", ...)                                     # check params with anicraft_commands
+ac.run("layer.set_volume", layer=music, volume=0.25)                 # 0-1, music bed under dialogue
 ```
 Pre-level dialogue to about -16 LUFS before import, master the exported MP4 to -14 LUFS / -1.5 dBTP with
 ffmpeg loudnorm (AniCraft has no loudness tool).
