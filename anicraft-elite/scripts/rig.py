@@ -97,7 +97,7 @@ def _ends(ac, r, f):
     out = {}
     for arm in info.get("armatures", []):
         for b in arm.get("bones", []):
-            out[b.get("name")] = (b.get("joint"), b.get("end"), b.get("angle", 0.0))
+            out[b.get("name")] = (b.get("head"), b.get("tail"), b.get("angle", 0.0))
     return out
 
 
@@ -124,6 +124,8 @@ def walk(ac, r, start, n, step_px=110, frames_per_step=12, lift_px=None, bob_px=
     w = {"start": start, "n": n, "T": 2 * frames_per_step, "step": step_px, "hip0": J0["hip"][0],
          "ground": J0["ankle_near"][1], "lift": lift_px if lift_px is not None else 0.12 * leg}
     bob = bob_px if bob_px is not None else 0.035 * leg
+    # a straight leg cannot reach a foot step/2 ahead: lower the hip by the reach deficit (+2 px) for the whole walk
+    drop = leg - math.sqrt(max(leg * leg - (step_px / 2) ** 2, 1.0)) + 2.0
     v = step_px / frames_per_step
     frames = list(range(start, start + n, key_every))
     if frames[-1] != start + n - 1:
@@ -132,7 +134,7 @@ def walk(ac, r, start, n, step_px=110, frames_per_step=12, lift_px=None, bob_px=
     errs = []
     for f in frames:
         t = f - start
-        bx, by = v * t, bob * math.cos(4 * math.pi * t / w["T"])     # low at contacts, high at passing
+        bx, by = v * t, drop + bob * (1 + math.cos(4 * math.pi * t / w["T"])) / 2   # lowest at contacts, highest at passing
         ac.run("bone.pose", layer=r["layer"], dx=bx - cx, dy=by - cy, frame=f)
         cx, cy = bx, by
         for side in ("near", "far"):

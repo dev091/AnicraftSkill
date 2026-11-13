@@ -32,8 +32,8 @@ with AniCraft() as ac:
     gate("no foot slide", s <= 2.0, f"planted foot drifts {s:.2f} px max over every stance frame")
     e = ac.run("bone.info", frame=6, layer=r["layer"])
     knees = {b["name"]: b for arm in e["armatures"] for b in arm["bones"] if b["name"].startswith(("hip_", "knee_"))}
-    hx, kx = knees["hip_near"]["joint"][0], knees["hip_near"]["end"][0]
-    ax = knees["knee_near"]["end"][0]
+    hx, kx = knees["hip_near"]["head"][0], knees["hip_near"]["tail"][0]
+    ax = knees["knee_near"]["tail"][0]
     gate("knee bends forward", kx >= (hx + ax) / 2 - 1, f"knee x {kx:.0f} vs hip/ankle mid {(hx + ax) / 2:.0f}")
     gate("movie length", ac.info()["movie_frames"] == N, str(ac.info()["movie_frames"]))
     doc = os.path.join(a.out, "walk.anicraft")
