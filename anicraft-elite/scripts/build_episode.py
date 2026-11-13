@@ -10,6 +10,8 @@ episode.json:
  "shots": [{"bg": "village", "chars": [{"name": "Ramu", "x": 600, "y": 620, "flip": false}],
             "lines": [{"who": "Ramu", "wav": "vo/001.wav"}], "hold": 0, "camera": {"zoom": 112, "x": 700, "y": 540}}]}
 x,y = where the centre of the character canvas goes. A shot lasts its lines (+0.3 s head, +0.5 s tail) or `hold` s.
+Line options: "gesture": explain (default) | point (at the other character, or "to") | namaste | worry | angry | shrug |
+wave_r | rest. Characters with arm parts + rig.json gesture (talker.py); others only lip-sync and blink.
 Per shot: BG, characters (body/eyes/mouth layers), lip-sync for each speaker, blinks, breathing idle, camera push,
 dialogue as stream sound -> shots/sNN.mp4 + sNN.anicraft. Then concat -> music bed ducked -> -14 LUFS -> final.mp4.
 """
@@ -18,6 +20,7 @@ sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 from acsession import AniCraft
 from lipsync import MOUTH3, MOUTH9, apply_cues, cues_for
 from recipes import blink, breathe, camera_push
+from talker import build_talker, gesture_track, with_symbol
 
 FFMPEG = os.environ.get("ANICRAFT_FFMPEG") or shutil.which("ffmpeg") or "ffmpeg"
 HEAD, TAIL = 0.3, 0.5
@@ -33,37 +36,9 @@ def to_wav(src, dst):
     return dst
 
 
-def mirrored(d, pngs):
-    """Left-right mirrored copies of part PNGs in <char>/_mirror/ (rebuilt when the source is newer)."""
-    from PIL import Image, ImageOps
-    md = os.path.join(d, "_mirror"); os.makedirs(md, exist_ok=True)
-    out = []
-    for p in pngs:
-        src, dst = os.path.join(d, p), os.path.join(md, p)
-        if not os.path.exists(dst) or os.path.getmtime(dst) < os.path.getmtime(src):
-            ImageOps.mirror(Image.open(src)).save(dst)
-        out.append(dst)
-    return out
-
-
 def lib_bitmap(ac, path):
     r = ac.run("file.import_to_library", path=path)
     return r.get("bitmap") or r.get("id")
-
-
-def part_symbol(ac, layer, name, pngs, x, y):
-    """Graphic symbol whose frame i shows pngs[i]; one instance at (x, y) on `layer`. Returns instance id."""
-    ac.at(layer, 0)
-    ac.run("library.place", bitmap=lib_bitmap(ac, pngs[0]), x=x, y=y)
-    inst = ac.run("modify.convert_to_symbol", name=name, kind="graphic")["instance"]
-    if len(pngs) > 1:
-        ac.run("symbol.edit")
-        inner = ac.info()["layer"]
-        for i, p in enumerate(pngs[1:], 1):
-            ac.key(inner, i, blank=True)
-            ac.run("library.place", bitmap=lib_bitmap(ac, p), x=0, y=0)
-        ac.run("symbol.exit", all=True)
-    return inst
 
 
 def build_shot(ep, base, k, shot, out):
@@ -81,32 +56,38 @@ def build_shot(ep, base, k, shot, out):
         ac.run("layer.rename", layer=bg, name="BG"); ac.at(bg, 0)
         ac.run("library.place", bitmap=lib_bitmap(ac, os.path.join(base, "backgrounds", shot["bg"] + ".png")), x=W / 2, y=H / 2)
         ac.fit(bg, N)
-        mouths, eye_layers, char_layers = {}, [], []
+        talkers = {}
         for c in shot.get("chars", []):
-            d = os.path.join(base, "characters", c["name"])
-            mouth_pngs = sorted(p for p in os.listdir(d) if p.startswith("mouth_"))
-            lay = {}
-            for part, pngs in (("body", ["body.png"]), ("eyes", [f"eyes_{i}.png" for i in range(3)]), ("mouth", mouth_pngs)):
-                lay[part] = ac.run("layer.new", name=f"{c['name']}_{part}")["layer"]
-                ac.fit(lay[part], N)
-                # flip = mirrored art, never modify.flip_h: a motion tween (breathing) re-decomposes a flipped
-                # instance as rotation 180 and turns it upside down (seen in testing)
-                files = mirrored(d, pngs) if c.get("flip") else [os.path.join(d, p) for p in pngs]
-                part_symbol(ac, lay[part], f"{c['name']}_{part}", files, c["x"], c["y"])
-            mouths[c["name"]] = (lay["mouth"], MOUTH9 if len(mouth_pngs) >= 9 else MOUTH3)
-            eye_layers.append(lay["eyes"]); char_layers += list(lay.values())
-        for who in {ln["who"] for ln in lines}:
-            cues = []
+            lay = ac.run("layer.new", name=c["name"])["layer"]
+            ac.fit(lay, N)
+            talkers[c["name"]] = build_talker(ac, lay, os.path.join(base, "characters", c["name"]), c["x"], c["y"], N,
+                                              flip=c.get("flip", False))
+        xs = {c["name"]: c["x"] for c in shot.get("chars", [])}
+        for i, (name, tk) in enumerate(talkers.items()):
+            cues, talking, events = [], [], [(0, "rest")]
             for ln, s, w in zip(lines, starts, tmpwav):
-                if ln["who"] == who:
-                    cues += [c for c in cues_for(w, fps, offset=s)] + [{"frame": s + round(wav_seconds(w) * fps), "shape": "X"}]
-            layer, chart = mouths[who]
-            apply_cues(ac, layer, sorted(cues, key=lambda c: c["frame"]), chart)
-        for i, el in enumerate(eye_layers):
-            blink(ac, el, N, fps, seed=7 + 13 * i + k)
-        for L in char_layers:                       # same breathing on every part keeps them aligned
-            if L not in eye_layers and L not in [m[0] for m in mouths.values()]:
-                breathe(ac, L, N, fps, period_s=3.2, amount_pct=1.2)
+                if ln["who"] != name:
+                    continue
+                e = s + round(wav_seconds(w) * fps)
+                cues += cues_for(w, fps, offset=s) + [{"frame": e, "shape": "X"}]
+                talking.append((s, e))
+                g = ln.get("gesture", "explain")
+                if g == "point":                      # point at the listener (or `to`)
+                    other = ln.get("to") or next((n for n in xs if n != name), None)
+                    g = "point_l" if other and xs[other] < xs[name] else "point_r"
+                events += [(max(1, s - 3), g), (min(N - 1, e + 4), "rest")]
+            events = sorted(events)
+            events = [ev for j, ev in enumerate(events)        # no arm drop between close lines
+                      if not (ev[1] == "rest" and j + 1 < len(events) and events[j + 1][0] - ev[0] < 12)]
+
+            def inside(tk=tk, cues=cues, talking=talking, events=events, i=i):
+                if cues:
+                    apply_cues(ac, tk["mouth_layer"], sorted(cues, key=lambda c: c["frame"]),
+                               MOUTH9 if tk["chart_n"] >= 9 else MOUTH3)
+                blink(ac, tk["eyes_layer"], N, fps, seed=7 + 13 * i + k)
+                gesture_track(ac, tk, events, N, talking)
+            with_symbol(ac, tk, inside)
+            breathe(ac, tk["layer"], N, fps, period_s=3.2, amount_pct=1.2)   # whole character, parts stay together
         cam = shot.get("camera", {"zoom": 106, "x": W / 2, "y": H / 2})
         camera_push(ac, N, zoom=cam.get("zoom", 106), x=cam.get("x", W / 2), y=cam.get("y", H / 2))
         for s, w in zip(starts, tmpwav):

@@ -19,9 +19,20 @@ def character(name, shirt, skin="#f2c19a"):
     im = canvas(); g = ImageDraw.Draw(im)
     g.rectangle([150, 560, 190, 635], fill="#3b3b3b"); g.rectangle([230, 560, 270, 635], fill="#3b3b3b")  # legs
     g.rounded_rectangle([120, 300, 300, 570], 30, fill=shirt)                                               # torso
-    g.rectangle([95, 320, 125, 520], fill=skin); g.rectangle([295, 320, 325, 520], fill=skin)               # arms
     g.ellipse([125, 70, 295, 290], fill=skin); g.pieslice([120, 50, 300, 200], 180, 360, fill="#222222")    # head + hair
     im.save(os.path.join(d, "body.png"))
+    J = {"shoulder_l": [112, 322], "elbow_l": [108, 420], "wrist_l": [106, 515],
+         "shoulder_r": [308, 322], "elbow_r": [312, 420], "wrist_r": [314, 515]}
+    for s in "lr":                                                   # arms with ROUND CAPS on every joint
+        for part, a, b, col in (("upper", "shoulder", "elbow", shirt), ("lower", "elbow", "wrist", skin)):
+            im = canvas(); g = ImageDraw.Draw(im); p, q = J[f"{a}_{s}"], J[f"{b}_{s}"]
+            g.line([tuple(p), tuple(q)], fill=col, width=30)
+            for c in (p, q):
+                g.ellipse([c[0] - 15, c[1] - 15, c[0] + 15, c[1] + 15], fill=col)
+            if part == "lower":
+                g.ellipse([q[0] - 17, q[1] - 6, q[0] + 17, q[1] + 30], fill=skin)   # hand
+            im.save(os.path.join(d, f"arm_{s}_{part}.png"))
+    json.dump({"canvas": [CW, CH], "joints": J}, open(os.path.join(d, "rig.json"), "w"), indent=1)
     for i, h in enumerate((24, 10, 2)):                                                                    # eyes open/half/closed
         im = canvas(); g = ImageDraw.Draw(im)
         for cx in (180, 240):
@@ -58,8 +69,8 @@ subprocess.run([FF, "-y", "-loglevel", "error", "-f", "lavfi", "-i", "sine=frequ
                 "sine=frequency=440:duration=8", "-filter_complex", "amix=inputs=2,volume=0.3", os.path.join(out, "music", "bed.wav")], check=True)
 ep = {"title": "Demo", "fps": 24, "size": [1920, 1080], "music": "music/bed.wav", "shots": [
     {"bg": "village", "chars": [{"name": "Ramu", "x": 620, "y": 640}, {"name": "Shyam", "x": 1150, "y": 640, "flip": True}],
-     "lines": [{"who": "Ramu", "wav": "vo/001.wav"}, {"who": "Shyam", "wav": "vo/002.wav"}]},
-    {"bg": "village", "chars": [{"name": "Ramu", "x": 900, "y": 640}], "lines": [{"who": "Ramu", "wav": "vo/003.wav"}],
+     "lines": [{"who": "Ramu", "wav": "vo/001.wav", "gesture": "explain"}, {"who": "Shyam", "wav": "vo/002.wav", "gesture": "point"}]},
+    {"bg": "village", "chars": [{"name": "Ramu", "x": 900, "y": 640}], "lines": [{"who": "Ramu", "wav": "vo/003.wav", "gesture": "namaste"}],
      "camera": {"zoom": 135, "x": 900, "y": 450}},
     {"bg": "village", "chars": [], "hold": 2, "camera": {"zoom": 110, "x": 1500, "y": 600}}]}
 json.dump(ep, open(os.path.join(out, "episode.json"), "w", encoding="utf-8"), indent=1)
