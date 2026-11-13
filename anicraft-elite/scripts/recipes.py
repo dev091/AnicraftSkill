@@ -58,10 +58,12 @@ def breathe(ac, layer, n, fps, period_s=3.0, amount_pct=1.5):
     ac.fit(layer, n)
     ac.run("timeline.create_motion_tween", layer=layer, frame=0)
     half = max(1, int(fps * period_s / 2))
-    f, up = 0, False
+    f, up, keys = 0, False, []
     while f < n:
         ac.run("motion.set_key", layer=layer, property="scale_y", value=100 + (amount_pct if up else 0), frame=f)
+        keys.append(f)
         f += half
         up = not up
-    ac.run("motion.set_ease", layer=layer, easing="QuadInOut", frame=0)
+    for k in keys[:-1]:                      # ease applies per segment
+        ac.run("motion.set_ease", layer=layer, easing="QuadInOut", property="scale_y", frame=k)
     return half
