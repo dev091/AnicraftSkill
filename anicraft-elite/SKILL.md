@@ -46,6 +46,17 @@ Never upload or publish anything. Follow low-token-ops: read only what the step 
 6. **Verify** (mandatory): `python scripts/verify_frames.py shot.anicraft --video shot.mp4 --expect-frames N --expect-size 1920x1080 --expect-fps 24`. Gates: frame count, every layer reaches the last frame, size/fps, video+audio streams, loudness -14 +/-1 LUFS, true peak <= -1 dBTP, motion between sampled frames (identical = frozen). Then look at `<shot>_qa/contact.jpg` once.
 7. **Score** with the factory rubric (story 15, art 15, motion 20, voice 15, editing 15, sound 10, packaging 10); list measured gaps. Voice naturalness is Rahul's ear.
 
+## 3b. Hindi moral-story lane (Dream Toon / Gomu Toons / Hindi Kahaniya format)
+- Niche numbers, look, story shape, shot grammar: `references/moral-toon-bible.md`. Asset rules + prompts:
+  `references/asset-spec.md`. Art comes from ChatGPT (`CHATGPT.md` in the repo root), pipeline runs on the PC or Dot (`DOT.md`).
+- Dialogue shots: `scripts/build_episode.py episode.json` (BG, talkers, lip-sync per speaker, blinks, breathing,
+  camera push, stream dialogue, concat, ducked music, -14 LUFS). Demo: `make_demo_assets.py` -> builder -> ALL PASS.
+- Walking: `scripts/rig.py` (`build` = standard 11-bone side rig from part files + `rig.json`; `walk` = IK with
+  planted feet, hip drop for reach, body bob, counter-swinging arms, keys on twos). Gate: `walk_test.py` (joint caps,
+  IK error <= 1.5 px, foot slide <= 2 px, knee forward). Verified: 0.01 px IK error, 0.06 px slide.
+- JOINT RULE: round caps centred on every joint on both parts. Most "joints break while walking" problems are art
+  without caps or pivots not on the cap centre; `rig.check_art` catches them before building.
+
 ## 4. Quality bar for toons (beat Akku Toon / Dream Toon level)
 - Limbs attached at joints (bone heads on the joint, limits on elbows/knees), no foot slide: travel per frame = stride px / frames per step.
 - Lip-sync within +/-1 frame of the cue; mouth never frozen while the voice plays; blink every 2-5 s (2 frames closed).

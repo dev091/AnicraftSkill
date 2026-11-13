@@ -15,6 +15,13 @@ anicraft-elite/
   scripts/verify_frames.py         QA gates: frames, layers, size/fps, streams, LUFS, true peak, contact sheet
   scripts/example_shot.py          end-to-end reference shot
   scripts/selftest.py              regression check after AniCraft updates
+  scripts/build_episode.py         episode.json -> dialogue shots -> final MP4 (lip-sync, blinks, camera, music, LUFS)
+  scripts/rig.py                   joint-safe side rig + IK walk (planted feet) ; walk_test.py = gates
+  scripts/make_demo_assets.py, make_demo_puppet.py   example inputs in the exact expected layout
+  references/moral-toon-bible.md   niche numbers, look, story shape (Dream Toon / Gomu Toons / Hindi Kahaniya)
+  references/asset-spec.md         joint rule, files, rig.json, image prompts
+CHATGPT.md                         instructions for ChatGPT (art department)
+DOT.md                             instructions for Dot (Linux pipeline)
 ```
 
 ## Setup scripts (Rahul PC)
