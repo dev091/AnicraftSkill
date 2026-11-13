@@ -18,13 +18,16 @@ no watermark, original character (not based on any existing show).
 1. Model sheet: front, 3/4 and side view, neutral pose, arms down, white background. Keep it as the identity anchor;
    reuse its description word for word in every later prompt (age, face, hair, clothes, colours).
 2. Talker (dialogue) set, all at the SAME canvas size (800x1400) and position, flat #00FF00 background:
-   body (mouth closed, eyes open); eyes sheet (open, half, closed); mouth sheet in this order: rest, closed MBP,
-   slightly open, open, wide, rounded O, puckered U, teeth-on-lip F/V, tongue L.
+   body WITHOUT arms (head, torso, legs; mouth closed, eyes open); 4 arm parts hanging straight down in place:
+   left upper arm, left forearm with open hand, right upper arm, right forearm with open hand, each with full round
+   circles at shoulder and elbow (JOINT RULE); eyes sheet (open, half, closed); mouth sheet in this order: rest,
+   closed MBP, slightly open, open, wide, rounded O, puckered U, teeth-on-lip F/V, tongue L.
 3. Walker (side view facing right) puppet parts on #00FF00 with gaps between parts: head with neck, torso with hips,
    upper arm, forearm with hand, thigh, shin, foot - twice (near and far, far one a shade darker).
    JOINT RULE: every limb end is a full round circle (the joint), radius at least half the limb width, on both parts
    of each joint (shoulder, elbow, hip, knee, ankle). Limbs straight; thigh = shin length; upper arm = forearm length.
-4. Name files exactly: body.png, eyes_0..2.png, mouth_0..8.png; torso.png, head.png, arm_near_upper.png,
+4. Name files exactly: body.png, arm_l_upper.png, arm_l_lower.png, arm_r_upper.png, arm_r_lower.png, eyes_0..2.png,
+   mouth_0..8.png; torso.png, head.png, arm_near_upper.png,
    arm_near_lower.png, arm_far_upper.png, arm_far_lower.png, leg_near_thigh.png, leg_near_shin.png, foot_near.png,
    leg_far_thigh.png, leg_far_shin.png, foot_far.png.
 

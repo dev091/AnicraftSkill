@@ -2,9 +2,12 @@
 
 ## Folder per character
 ```
-characters/<Name>/            front 3/4 "talker" (dialogue shots, build_episode.py)
-  body.png, eyes_0.png (open), eyes_1.png (half), eyes_2.png (closed), mouth_0..2.png (rest/mid/open)
-  or mouth_0..8.png (X A B C D E F G H, Rhubarb chart)
+characters/<Name>/            front 3/4 "talker" (dialogue shots, build_episode.py + talker.py)
+  body.png (head + torso + legs, NO arms), arm_l_upper.png, arm_l_lower.png (forearm + hand),
+  arm_r_upper.png, arm_r_lower.png (l/r = SCREEN left/right), rig.json (shoulder/elbow/wrist _l/_r; optional
+  chest, head_side_l/_r, hip_l/_r), eyes_0.png (open), eyes_1.png (half), eyes_2.png (closed),
+  mouth_0..2.png (rest/mid/open) or mouth_0..8.png (X A B C D E F G H, Rhubarb chart)
+  Without arm files + rig.json the talker still lip-syncs and blinks but cannot gesture.
 characters/<Name>_side/       side "walker" (rig.py), facing RIGHT
   rig.json + torso, head, arm_near_upper, arm_near_lower (incl. hand), arm_far_upper, arm_far_lower,
   leg_near_thigh, leg_near_shin, foot_near, leg_far_thigh, leg_far_shin, foot_far  (.png or .svg)

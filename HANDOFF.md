@@ -12,7 +12,7 @@
   eyes/mouth; (3) first real episode with ChatGPT art + TTS; (4) turn/3-4 view walk.
 
 ## SWOT gaps (P0 = do first)
-P0 script->shotlist generator; talker gesture rig (arms + 5 gestures); Hindi TTS lane + Rhubarb phonetic;
+P0 DONE: talker gesture rig (talker.py, verified 2026-11-13). TODO: script->shotlist generator; Hindi TTS lane + Rhubarb phonetic;
    automate the 3 hand-checked gates (static > 3 s, shot median, lip-sync coverage); prep_parts.py.
 P1 head turns (front/3-4/side) + brows/expressions; props in hand + sit/stand; location bible with parallax layers;
    ambience/SFX library; intro sting + end screen; walk start/stop/turn.

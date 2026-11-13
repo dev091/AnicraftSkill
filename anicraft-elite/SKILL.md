@@ -51,6 +51,13 @@ Never upload or publish anything. Follow low-token-ops: read only what the step 
   `references/asset-spec.md`. Art comes from ChatGPT (`CHATGPT.md` in the repo root), pipeline runs on the PC or Dot (`DOT.md`).
 - Dialogue shots: `scripts/build_episode.py episode.json` (BG, talkers, lip-sync per speaker, blinks, breathing,
   camera push, stream dialogue, concat, ducked music, -14 LUFS). Demo: `make_demo_assets.py` -> builder -> ALL PASS.
+- Talkers (`scripts/talker.py`): ONE graphic symbol per character per shot = body + arm bones + eyes + mouth, so
+  breathing/moves act on one instance and parts never drift. Gestures by IK: explain (auto toward the listener),
+  point (auto at the listener), namaste, worry, angry, shrug, fold, wave_r, rest; 5-frame blends, talk beats every
+  12 frames while speaking; elbow bend side auto-detected. Per line in episode.json: `"gesture": "point"`.
+  Verified: listener mouth stays shut (27-44 px vs 268-296 px speaking), point/explain wrists land on target.
+- Graphic symbols LOOP by default: every eyes/mouth instance must be keyed `single_frame` from frame 0 (the builder
+  and `apply_cues` do it); otherwise silent characters flap their mouths.
 - Walking: `scripts/rig.py` (`build` = standard 11-bone side rig from part files + `rig.json`; `walk` = IK with
   planted feet, hip drop for reach, body bob, counter-swinging arms, keys on twos). Gate: `walk_test.py` (joint caps,
   IK error <= 1.5 px, foot slide <= 2 px, knee forward). Verified: 0.01 px IK error, 0.06 px slide.
