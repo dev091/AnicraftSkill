@@ -17,6 +17,10 @@ anicraft-elite/
   scripts/selftest.py              regression check after AniCraft updates
 ```
 
+## Setup scripts (Rahul PC)
+- `setup/install_skill.ps1`: download/update the skill into `~\.claude\skills` + `D:\youtube\anicraft\tools`.
+- `setup/connect_mcp.py`: register the MCP server in Claude Desktop + Claude Code (backs up configs).
+
 ## Install
 - **Claude Code (PC):** copy `anicraft-elite` to `%USERPROFILE%\.claude\skills\anicraft-elite`.
 - **claude.ai:** zip the `anicraft-elite` folder and upload it in Settings > Capabilities > Skills.
