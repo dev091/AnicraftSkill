@@ -103,7 +103,8 @@ def build_talker(ac, layer, d, x, y, n, flip=False, name=None):
             W, H = spec["canvas"]
             J, L = _joints(spec, W, H, flip)
             t["J"], t["L"] = J, L
-            body_inst = ac.at(body_layer, 0, select=True)["selected"][0]
+            ac.at(body_layer, 0, select=True)          # the body is a bitmap here: bones need a symbol instance
+            body_inst = ac.run("modify.convert_to_symbol", name=f"{name}_body", kind="graphic")["instance"]
             arm = {}
             for s in "lr":
                 for p in ("upper", "lower"):
